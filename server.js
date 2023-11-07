@@ -9,101 +9,68 @@ const { notes } = require('./db/db.json'); //
 
 const PORT = process.env.PORT || 3001;
 
-// express
+// 
+
 const app = express();
 
-// Middleware functions
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-function createNote(body, notesArray) {
-    const note = body;
-    notesArray.push(note);
-
-    try {
-        fs.writeFileSync(
-            path.join(__dirname, './db/db.json'),
-            JSON.stringify({ notes: notesArray }, null, 2)
-        );
-    } catch (error) {
-        console.error('Error writing to file:', error);
-        // You can choose to handle the error here, maybe send an error response.
-    }
-
-    return body;
-}
-
-// api routes
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).send('Something went wrong!');
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
 });
 
-// Get
+// Move createNote function to a separate utility file for modularity
 
 app.get('/api/notes', (req, res) => {
-    let results = notes;
-    res.json(results);
+  res.json(notes);
 });
 
-// Post
-
-app.post('/api/notes', (req, res) => {
-    req.body.id = notes.length.toString();
-    const note = createNote(req.body, notes);
-    res.json(note);
+app.post('/api/notes', (req, res, next) => {
+  req.body.id = notes.length.toString();
+  notes.push(req.body);
+  try {
+    fs.writeFileSync(
+      path.join(__dirname, './db/db.json'),
+      JSON.stringify({ notes }, null, 2)
+    );
+    res.json(req.body);
+  } catch (error) {
+    next(error); // Pass error to error handling middleware
+  }
 });
 
-// Delete
-// DELETE route to delete a specific note
-app.delete('/api/notes/:id', (req, res) => {
-    const noteId = req.params.id;
-  
-    // Find the index of the note with the given ID
-    const noteIndex = notes.findIndex((note) => note.id === noteId);
-  
-    if (noteIndex !== -1) {
-      // Remove the note from the array
-      notes.splice(noteIndex, 1);
-  
-      // Write the updated notes array to the JSON file
+app.delete('/api/notes/:id', (req, res, next) => {
+  const noteId = req.params.id;
+  const noteIndex = notes.findIndex((note) => note.id === noteId);
+
+  if (noteIndex !== -1) {
+    notes.splice(noteIndex, 1);
+    try {
       fs.writeFileSync(
         path.join(__dirname, './db/db.json'),
         JSON.stringify({ notes }, null, 2)
       );
-  
       res.json({ message: 'Note deleted' });
-    } else {
-      res.status(404).json({ error: 'Note not found' });
+    } catch (error) {
+      next(error); // Pass error to error handling middleware
     }
-  });
-
-
-// HTML routes
-// We want the results to be displayed on the html
+  } else {
+    res.status(404).json({ error: 'Note not found' });
+  }
+});
 
 app.get('/notes', (req, res) => {
-    try {
-        res.sendFile(path.join(__dirname, './public/notes.html'));
-    } catch (error) {
-        console.error('Error sending notes.html:', error);
-        // Handle the error or send an appropriate response
-        res.status(500).send('Error fetching notes.html');
-    }
+  res.sendFile(path.join(__dirname, './public/notes.html'));
 });
 
 app.get('*', (req, res) => {
-    try {
-        res.sendFile(path.join(__dirname, './public/index.html'));
-    } catch (error) {
-        console.error('Error sending index.html:', error);
-        // Handle the error or send an appropriate response
-        res.status(500).send('Error fetching index.html');
-    }
+  res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log('API server running on port 3001!');
+  console.log(`API server running on port ${PORT}!`);
 });
