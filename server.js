@@ -12,7 +12,17 @@ const PORT = process.env.port || 3001;
 // express
 const app = express();
 
+// Middleware functions
 app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 app.use(express.static('public'));
 
+function createNote(body, notesCollected) {
+    const note = body;
+    notesCollected.push(note);
+    fs.writeFileSync(
+        path.join(__dirname, './db/db.json'), 
+        JSON.stringify({ notes: notesCollected}, null, 2)
+    );
+    return body;
+}
