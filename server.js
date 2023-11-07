@@ -3,7 +3,7 @@
 const fs = require('fs'); // As we are creating a file, we need FS to write it.
 const path = require('path'); // We will need to handle the file paths and navigate the directory
 const express = require('express'); // Used for building apis and allows us to use middleware
-const notes = require('./db/db.json'); //This is where we will store the notes
+const { notes } = require('./db/db.json'); //
 
 // Need a place to display the information on the server
 
@@ -48,11 +48,11 @@ app.get('/api/notes', (req, res) => {
 
 app.post('/api/notes', (req, res) => {
     req.body.id = notes.length.toString();
-    const note = createNoteSync(req.body, notes);
+    const note = createNote(req.body, notes);
     if (note) {
         res.json(note);
     } else {
-    res.status(500).json({ error: 'Failed to create a note'});
+    res.status(500).json({ error: 'Failed to create a note.'})
     }
    
 });
