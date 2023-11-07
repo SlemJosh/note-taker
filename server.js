@@ -7,7 +7,7 @@ const notes = require('./db/db.json'); //This is where we will store the notes
 
 // Need a place to display the information on the server
 
-const PORT = process.env.port || 3001;
+const PORT = process.env.PORT || 3001;
 
 // express
 const app = express();
@@ -17,14 +17,22 @@ app.use(express.urlencoded({ extended: true}));
 app.use(express.json());
 app.use(express.static('public'));
 
-function createNote(body, notesCollected) {
+function createNote(body, notesCollected, callback) {
     const note = body;
     notesCollected.push(note);
+
     fs.writeFileSync(
         path.join(__dirname, './db/db.json'), 
-        JSON.stringify({ notes: notesCollected}, null, 2)
+        JSON.stringify({ notes: notesCollected }, null, 2),
+        (err) => {
+            if (err) {
+                console.log("Error writing file:", err);
+                callback(err);
+                return;
+            }
+            callback(null, body);
+        }
     );
-    return body;
 }
 
 // api routes
@@ -40,7 +48,27 @@ app.get('/api/notes', (req, res) => {
 
 app.post('/api/notes', (req, res) => {
     req.body.id = notes.length.toString();
-    const note = createNote(req.body, notes)
-    res.json(note);
+    const note = createNoteSync(req.body, notes);
+    if (note) {
+        res.json(note);
+    } else {
+    res.status(500).json({ error: 'Failed to create a note'});
+    }
+   
 });
 
+
+// HTML routes
+// We want the results to be displayed on the html
+
+app.get('/notes', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/notes.html'));
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, './public/index.html'));
+});
+
+app.listen(PORT, () =>{
+    console.log('API server running on port 3001!');
+});
