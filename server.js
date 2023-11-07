@@ -2,5 +2,17 @@
 
 const fs = require('fs'); // As we are creating a file, we need FS to write it.
 const path = require('path'); // We will need to handle the file paths and navigate the directory
-const express = require('express'); // Used for buidling apis and allows us to use middleware
+const express = require('express'); // Used for building apis and allows us to use middleware
 const notes = require('./db/db.json'); //This is where we will store the notes
+
+// Need a place to display the information on the server
+
+const PORT = process.env.port || 3001;
+
+// express
+const app = express();
+
+app.use(express.urlencoded({ extended: true}));
+app.use(express.json());
+app.use(express.static('public'));
+
