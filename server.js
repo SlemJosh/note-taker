@@ -21,14 +21,25 @@ function createNote(body, notesArray) {
     const note = body;
     notesArray.push(note);
 
-    fs.writeFileSync(
-        path.join(__dirname, './db/db.json'),
-        JSON.stringify({ notes: notesArray }, null, 2)
-    );
+    try {
+        fs.writeFileSync(
+            path.join(__dirname, './db/db.json'),
+            JSON.stringify({ notes: notesArray }, null, 2)
+        );
+    } catch (error) {
+        console.error('Error writing to file:', error);
+        // You can choose to handle the error here, maybe send an error response.
+    }
+
     return body;
 }
 
 // api routes
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).send('Something went wrong!');
+});
 
 // Get
 
@@ -74,11 +85,23 @@ app.delete('/api/notes/:id', (req, res) => {
 // We want the results to be displayed on the html
 
 app.get('/notes', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/notes.html'));
+    try {
+        res.sendFile(path.join(__dirname, './public/notes.html'));
+    } catch (error) {
+        console.error('Error sending notes.html:', error);
+        // Handle the error or send an appropriate response
+        res.status(500).send('Error fetching notes.html');
+    }
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, './public/index.html'));
+    try {
+        res.sendFile(path.join(__dirname, './public/index.html'));
+    } catch (error) {
+        console.error('Error sending index.html:', error);
+        // Handle the error or send an appropriate response
+        res.status(500).send('Error fetching index.html');
+    }
 });
 
 app.listen(PORT, () => {
