@@ -1,20 +1,22 @@
-// What npms will we need?
+// Modules
+const fs = require('fs'); // File system module for file operations
+const path = require('path'); // Path module for handling file paths
+const express = require('express'); // Express for building APIs
 
-const fs = require('fs'); // As we are creating a file, we need FS to write it.
-const path = require('path'); // We will need to handle the file paths and navigate the directory
-const express = require('express'); // Used for building apis and allows us to use middleware
-const { notes } = require('./db/db.json'); //
+// Constant for note data (initially read from file)
+const { notes } = require('./db/db.json');
 
-// Need a place to display the information on the server
-
+// Define the port for the server
 const PORT = process.env.PORT || 3001;
 
-// 
-
+// Create an Express application
 const app = express();
 
+// Middlewares: parse incoming request bodies
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Serve static files from the 'public' directory
 app.use(express.static('public'));
 
 // Error handling middleware
@@ -23,54 +25,64 @@ app.use((err, req, res, next) => {
   res.status(500).send('Something went wrong!');
 });
 
-// Move createNote function to a separate utility file for modularity
-
+// Get request to retrieve notes
 app.get('/api/notes', (req, res) => {
   res.json(notes);
 });
 
+// Post request to create a new note
 app.post('/api/notes', (req, res, next) => {
+  // Assign a unique ID to the new note
   req.body.id = notes.length.toString();
+  // Add the new note to the notes array
   notes.push(req.body);
-  try {
-    fs.writeFileSync(
-      path.join(__dirname, './db/db.json'),
-      JSON.stringify({ notes }, null, 2)
-    );
-    res.json(req.body);
-  } catch (error) {
-    next(error); // Pass error to error handling middleware
-  }
+  const notesJSON = JSON.stringify({ notes }, null, 2);
+
+  fs.writeFile(path.join(__dirname, './db/db.json'), notesJSON, (err) => {
+    if (err) {
+      // If writing to the file fails, remove the newly added note to maintain consistency
+      notes.pop(); // Remove the recently added note
+      next(err);
+    } else {
+      res.json(req.body);
+    }
+  });
 });
 
+// Delete request to remove a note by ID
 app.delete('/api/notes/:id', (req, res, next) => {
   const noteId = req.params.id;
   const noteIndex = notes.findIndex((note) => note.id === noteId);
 
   if (noteIndex !== -1) {
     notes.splice(noteIndex, 1);
-    try {
-      fs.writeFileSync(
-        path.join(__dirname, './db/db.json'),
-        JSON.stringify({ notes }, null, 2)
-      );
-      res.json({ message: 'Note deleted' });
-    } catch (error) {
-      next(error); // Pass error to error handling middleware
-    }
+    const notesJSON = JSON.stringify({ notes }, null, 2);
+
+    fs.writeFile(path.join(__dirname, './db/db.json'), notesJSON, (err) => {
+      if (err) {
+        // If writing to the file fails, re-add the deleted note to maintain consistency
+        notes.splice(noteIndex, 0, notes[noteIndex]);
+        next(err);
+      } else {
+        res.json({ message: 'Note deleted' });
+      }
+    });
   } else {
     res.status(404).json({ error: 'Note not found' });
   }
 });
 
+// Serve the notes.html file
 app.get('/notes', (req, res) => {
   res.sendFile(path.join(__dirname, './public/notes.html'));
 });
 
+// Catch-all route to serve the index.html file for any other routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
+// Start the server
 app.listen(PORT, () => {
-  console.log(`API server running on port ${PORT}!`);
+  console.log(`API server running on http://localhost:${PORT}`);
 });
