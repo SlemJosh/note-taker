@@ -13,26 +13,19 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 // Middleware functions
-app.use(express.urlencoded({ extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
 
-function createNote(body, notesCollected, callback) {
+function createNote(body, notesArray) {
     const note = body;
-    notesCollected.push(note);
+    notesArray.push(note);
 
     fs.writeFileSync(
-        path.join(__dirname, './db/db.json'), 
-        JSON.stringify({ notes: notesCollected }, null, 2),
-        (err) => {
-            if (err) {
-                console.log("Error writing file:", err);
-                callback(err);
-                return;
-            }
-            callback(null, body);
-        }
+        path.join(__dirname, './db/db.json'),
+        JSON.stringify({ notes: notesArray }, null, 2)
     );
+    return body;
 }
 
 // api routes
@@ -49,13 +42,32 @@ app.get('/api/notes', (req, res) => {
 app.post('/api/notes', (req, res) => {
     req.body.id = notes.length.toString();
     const note = createNote(req.body, notes);
-    if (note) {
-        res.json(note);
-    } else {
-    res.status(500).json({ error: 'Failed to create a note.'})
-    }
-   
+    res.json(note);
 });
+
+// Delete
+// DELETE route to delete a specific note
+app.delete('/api/notes/:id', (req, res) => {
+    const noteId = req.params.id;
+  
+    // Find the index of the note with the given ID
+    const noteIndex = notes.findIndex((note) => note.id === noteId);
+  
+    if (noteIndex !== -1) {
+      // Remove the note from the array
+      notes.splice(noteIndex, 1);
+  
+      // Write the updated notes array to the JSON file
+      fs.writeFileSync(
+        path.join(__dirname, './db/db.json'),
+        JSON.stringify({ notes }, null, 2)
+      );
+  
+      res.json({ message: 'Note deleted' });
+    } else {
+      res.status(404).json({ error: 'Note not found' });
+    }
+  });
 
 
 // HTML routes
@@ -69,6 +81,6 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, './public/index.html'));
 });
 
-app.listen(PORT, () =>{
+app.listen(PORT, () => {
     console.log('API server running on port 3001!');
 });
