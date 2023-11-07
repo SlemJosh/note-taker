@@ -26,3 +26,21 @@ function createNote(body, notesCollected) {
     );
     return body;
 }
+
+// api routes
+
+// Get
+
+app.get('/api/notes', (req, res) => {
+    let results = notes;
+    res.json(results);
+});
+
+// Post
+
+app.post('/api/notes', (req, res) => {
+    req.body.id = notes.length.toString();
+    const note = createNote(req.body, notes)
+    res.json(note);
+});
+
