@@ -19,6 +19,10 @@ This app was a project of refactoring work that was provided to me at the UoU co
 This project does require node as well as multiple npm's to install. Those npms include fs, path, and express that allow us to write to a file, and be able to navigate through our directory to that file.  The express also helps us build an api that lets the user view information that is posted. This project is also deployed at the following address where no installation is necessary.  
 
 ## Usage
+![Note Taker App Screenshots](/images/notetaker1.png)
+![Note Taker App Screenshots](/images/notetaker2.png)
+![Note Taker App Screenshots](/images/notetaker3.png)
+
 
 If you are using this on your own terminal. Make sure that node is installed.  Then start with npm install fs, npm install path, npm install express.  Once all those  npms are installed, you would simple type , npm start into the terminal.  It will then  tell you that the server has been started with a link to the port so you can view it.  On the HTML itself, you would simply click the get started button and it would take you to the note page.  You would need to fill out a note title and a note text and then a save button will appear to which you will click and the information will be saved and avaiable for you to view on the left side of your screen. You may also delete the notes once you decide you no longer need them, by clicking the trashcan icon next to that specific note.
 
