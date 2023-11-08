@@ -32,7 +32,7 @@ This project is licensed under the MIT license. Click [here]([MIT License](https
 
 ## Contributing
 
-No collaborators for this project, however the bulk of code was provided for us from the UoU coding bootcamp done by the edX.
+No collaborators for this project, however the bulk of code was provided for us from the UoU coding bootcamp done by the edX school.
 
 ## Tests
 

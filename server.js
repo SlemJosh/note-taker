@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 3001;
 // Create an Express application
 const app = express();
 
-// Middlewares: parse incoming request bodies
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
