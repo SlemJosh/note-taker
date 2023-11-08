@@ -16,7 +16,9 @@ This app was a project of refactoring work that was provided to me at the UoU co
 
 ## Installation
 
-This project does require node as well as multiple npm's to install. Those npms include fs, path, and express that allow us to write to a file, and be able to navigate through our directory to that file.  The express also helps us build an api that lets the user view information that is posted. This project is also deployed at the following address where no installation is necessary.  
+This project does require node as well as multiple npm's to install. Those npms include fs, path, and express that allow us to write to a file, and be able to navigate through our directory to that file.  The express also helps us build an api that lets the user view information that is posted. This project is also deployed at the following address where no installation is necessary. 
+
+https://slem-note-taker-5af3c222eabc.herokuapp.com/
 
 ## Usage
 ![Note Taker App Screenshots](/images/notetaker1.png)
